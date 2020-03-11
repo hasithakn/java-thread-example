@@ -3,9 +3,9 @@ package v6;
 
 public class RequestCoordinator {
 
-    private final ItemStoreImpl socketStore;
+    private final SocketQueueImpl socketStore;
 
-    public RequestCoordinator(ItemStoreImpl socketStore) {
+    public RequestCoordinator(SocketQueueImpl socketStore) {
         this.socketStore = socketStore;
     }
 

@@ -13,9 +13,9 @@ import java.net.Socket;
 public class RequestProcessor {
 
     private final Thread t;
-    private final ItemStoreImpl<Socket> socketStore;
+    private final SocketQueueImpl<Socket> socketStore;
 
-    public RequestProcessor(int tId, ItemStoreImpl<Socket> socketStore) {
+    public RequestProcessor(int tId, SocketQueueImpl<Socket> socketStore) {
         this.socketStore = socketStore;
         t = new Thread(() -> process());
         t.setName("processor - "+tId);
@@ -48,8 +48,8 @@ public class RequestProcessor {
             if ((inputLine = in.readLine()) != null) {
                 System.out.println(String.format("Received Client Message is [%s]",inputLine));
                 CloseableHttpClient httpClient = HttpClients.createDefault();
-                ProductAvailabilityChecker productAvailabilityChecker = new ProductAvailabilityChecker(new ApiRequestHandler(httpClient));
-                out.println(productAvailabilityChecker.isAvailable(inputLine));
+                ProductDetailsService productDetailsService = new ProductDetailsService(new ApiRequestHandler(httpClient));
+                out.println(productDetailsService.getDetails(inputLine));
             }
         } catch (IOException e) {
             e.printStackTrace();

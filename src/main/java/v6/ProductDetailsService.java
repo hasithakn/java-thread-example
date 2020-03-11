@@ -2,19 +2,19 @@ package v6;
 
 import util.LogPrinter;
 
-public class ProductAvailabilityChecker {
+public class ProductDetailsService {
 
     private final ApiRequestHandler apiRequestHandler;
 
-    public ProductAvailabilityChecker(ApiRequestHandler apiRequestHandler) {
+    public ProductDetailsService(ApiRequestHandler apiRequestHandler) {
         this.apiRequestHandler = apiRequestHandler;
     }
 
-    public String isAvailable(String details) {
+    public String getDetails(String details) {
 
         String[] orderDetails = details.split("\\|");
         if (orderDetails.length != 2) {
-            return "Request Object Parameter is invalid.";
+            return "Invalid request Parameter";
         }
         String productId = orderDetails[0];
         String product = apiRequestHandler.get(String.format("http://localhost:5080/products/id/%s", productId));
@@ -31,7 +31,7 @@ public class ProductAvailabilityChecker {
         if (availableQty >= orderQty) {
             return productName +" is Available";
         } else {
-            return productName+ " is NOT Available";
+            return productName+ " NOT Available";
         }
     }
 }
