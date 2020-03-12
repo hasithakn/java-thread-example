@@ -7,7 +7,7 @@ public class ClientFactory {
 
     public static void main(String[] args) throws InterruptedException {
         Random random = new Random();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 5; i++) {
             int productId = random.nextInt(4) + 1;
             int qty = random.nextInt(10) + 1;
             Thread client = new Thread(

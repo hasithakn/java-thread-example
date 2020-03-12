@@ -9,15 +9,18 @@ import java.util.concurrent.Executors;
 
 @SuppressWarnings("Duplicates")
 public class Server {
+
+    private static final ExecutorService executors =
+            Executors.newFixedThreadPool(10, r -> new Thread(r, "server-threads"));
+
     public static void main(String[] args) throws IOException {
         int portNumber = 8081;
-        SocketQueueImpl socketStore = new SocketQueueImpl();
-        RequestCoordinator rc = new RequestCoordinator(socketStore);
-        rc.start();
+
         try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
             while (true) {
                 final Socket clientSocket = serverSocket.accept();
-                socketStore.newRequestReceived(clientSocket);
+                RequestProcessor requestProcessor = new RequestProcessor(executors, clientSocket);
+                executors.execute(requestProcessor);
             }
         }
     }

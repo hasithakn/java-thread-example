@@ -2,15 +2,22 @@ package v7;
 
 import util.LogPrinter;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
 public class ProductDetailsService {
 
     private final ApiRequestHandler apiRequestHandler;
+    private final ExecutorService executorService;
 
-    public ProductDetailsService(ApiRequestHandler apiRequestHandler) {
+    public ProductDetailsService(ApiRequestHandler apiRequestHandler, ExecutorService executorService) {
         this.apiRequestHandler = apiRequestHandler;
+        this.executorService = executorService;
     }
 
-    public String getDetails(String details) throws InterruptedException {
+    public String getDetails(String details) throws InterruptedException, ExecutionException {
 
         String[] orderDetails = details.split("\\|");
         if (orderDetails.length != 2) {
@@ -21,14 +28,12 @@ public class ProductDetailsService {
         ProductClient productClient = new ProductClient(productId,
                 "http://172.16.1.71:5080/products/id/%s",
                 apiRequestHandler);
-        Thread productThread = new Thread(productClient);
-        productThread.start();
 
+        Future<String> submit = executorService.submit(productClient);
         String[] inventory = apiRequestHandler.get(String.format("http://172.16.1.71:5080/inventory/id/%s", productId)).split(",");
 
-
-        productThread.join();
-        String product = productClient.getValue();
+        String product = submit.get();
+//        String product = productClient.getValue();
         int availableQty;
         try {
             availableQty = Integer.parseInt(inventory[1]);
@@ -52,7 +57,7 @@ public class ProductDetailsService {
 
     }
 
-    static class ProductClient implements Runnable {
+    static class ProductClient implements Callable<String> {
 
         private String id;
         private String url;
@@ -66,12 +71,9 @@ public class ProductDetailsService {
         }
 
         @Override
-        public void run() {
-            res = apiRequestHandler.get(String.format(url, id));
-        }
-
-        public String getValue() {
-            return res;
+        public String call() throws Exception {
+            LogPrinter.logMsg(String.format("Product client callable"));
+            return apiRequestHandler.get(String.format(url, id));
         }
     }
 
