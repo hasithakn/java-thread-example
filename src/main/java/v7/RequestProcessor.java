@@ -10,20 +10,16 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 @SuppressWarnings("Duplicates")
-public class RequestProcessor {
+public class RequestProcessor implements Runnable {
 
-    private final Thread t;
     private final SocketQueueImpl<Socket> socketStore;
 
     public RequestProcessor(int tId, SocketQueueImpl<Socket> socketStore) {
         this.socketStore = socketStore;
-        t = new Thread(() -> process());
-        t.setName("processor - "+tId);
-        t.start();
     }
 
 
-    private void process(){
+    private void process() {
         while (true) {
             try {
                 Socket socket = socketStore.getRequest();
@@ -46,7 +42,7 @@ public class RequestProcessor {
             String inputLine;
 
             if ((inputLine = in.readLine()) != null) {
-                System.out.println(String.format("Received Client Message is [%s]",inputLine));
+                System.out.println(String.format("Received Client Message is [%s]", inputLine));
                 CloseableHttpClient httpClient = HttpClients.createDefault();
                 ProductDetailsService productDetailsService = new ProductDetailsService(new ApiRequestHandler(httpClient));
                 out.println(productDetailsService.getDetails(inputLine));
@@ -56,5 +52,10 @@ public class RequestProcessor {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void run() {
+        process();
     }
 }
